@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getPlatformStats, getTrendingHashtags, getAllPosts } from '../../api/admin';
+import { getPlatformStats, getTrendingHashtags, getAllPosts, getAllStories } from '../../api/admin';
 import Spinner from '../../components/common/Spinner';
 import { formatCount } from '../../utils/formatters';
 import { useAuth } from '../../context/AuthContext';
@@ -24,33 +24,46 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1. Always fetch hashtags (common for both)
     getTrendingHashtags()
       .then(tr => setTags(tr.data?.data || tr.data || []))
       .catch(() => setTags([]));
 
-    // 2. Fetch platform stats
     if (isAdmin) {
-      // Fetch users and posts in parallel to get counts
-      Promise.all([getPlatformStats(), getAllPosts()])
-        .then(([sr, pr]) => {
-          const userData = sr.data?.data || sr.data || [];
-          const postData = pr.data?.data || pr.data || [];
+      Promise.allSettled([getPlatformStats(), getAllPosts(), getAllStories()])
+        .then((results) => {
+          const sr = results[0].status === 'fulfilled' ? results[0].value : null;
+          const pr = results[1].status === 'fulfilled' ? results[1].value : null;
+          const str = results[2].status === 'fulfilled' ? results[2].value : null;
+
+          const userData = sr?.data?.data || sr?.data || [];
+          const postData = pr?.data?.data || pr?.data || [];
+          const storyData = str?.data?.data || str?.data || [];
           
           if (Array.isArray(userData)) {
+            const today = new Date().toDateString();
+            
+            // Count stories created today
+            const storiesCreatedToday = Array.isArray(storyData) ? storyData.filter(s => {
+              const storyDate = new Date(s.createdAt || s.createdDate || s.createdTime).toDateString();
+              return storyDate === today;
+            }).length : 0;
+            
             setStats({
               totalUsers: userData.length,
               activeUsers: userData.filter(u => u.isActive).length,
-              totalPosts: Array.isArray(postData) ? postData.length : 0,
-              // Calculate global totals by summing up counts from all posts
+              totalPosts: Array.isArray(postData) ? postData.filter(p => p.type !== 'STORY' && !p.isStory).length : 0,
               totalComments: Array.isArray(postData) ? postData.reduce((acc, p) => acc + (p.commentsCount || 0), 0) : 0,
               totalLikes: Array.isArray(postData) ? postData.reduce((acc, p) => acc + (p.likesCount || 0), 0) : 0,
-              storiesCreatedToday: 0
+              storiesCreatedToday: storiesCreatedToday
             });
+          }
+
+          if (results[2].status === 'rejected') {
+            console.warn("Media service fetch failed, showing 0 for stories today.");
           }
         })
         .catch((err) => {
-          console.error("Stats fetch failed:", err);
+          console.error("Critical stats fetch failed:", err);
           setStats({ totalUsers: 0, activeUsers: 0, totalPosts: 0, totalComments: 0, totalLikes: 0, storiesCreatedToday: 0 });
         })
         .finally(() => setLoading(false));

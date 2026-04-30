@@ -57,78 +57,80 @@ export default function UsersPage() {
 
       {loading ? <Spinner centered /> : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table className="data-table">
-            <thead><tr><th>User</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>
-              {filtered.map((u) => {
-                const isSelf = u.userId === currentUser?.userId;
-                return (
-                  <tr key={u.userId}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                        <Avatar src={u.profilePicUrl} name={u.username} size="sm" />
-                        <div>
-                          <div className="font-medium">{u.username} {isSelf && <span className="text-muted">(You)</span>}</div>
-                          <div className="text-xs text-muted">{u.email}</div>
+          <div className="data-table-wrapper">
+            <table className="data-table">
+              <thead><tr><th>User</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                {filtered.map((u) => {
+                  const isSelf = u.userId === currentUser?.userId;
+                  return (
+                    <tr key={u.userId}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                          <Avatar src={u.profilePicUrl} name={u.username} size="sm" />
+                          <div>
+                            <div className="font-medium">{u.username} {isSelf && <span className="text-muted">(You)</span>}</div>
+                            <div className="text-xs text-muted text-truncate-mobile">{u.email}</div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span className={`badge badge-${u.role === 'ADMIN' ? 'amber' : u.role === 'MODERATOR' ? 'success' : 'brown'}`}>
-                          {u.role}
-                        </span>
-                        {!isSelf && (
-                          <select 
-                            className="text-xs" 
-                            style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}
-                            value={u.role}
-                            onChange={(e) => handleRoleChange(u.userId, e.target.value)}
-                          >
-                            <option value="USER">USER</option>
-                            <option value="MODERATOR">MODERATOR</option>
-                          </select>
-                        )}
-                      </div>
-                    </td>
-                    <td className="text-xs text-muted">{fullDate(u.createdAt)}</td>
-                    <td>
-                      <span className={`badge badge-${u.isActive ? 'success' : 'error'}`}>
-                        {u.isActive ? 'Active' : 'Suspended'}
-                      </span>
-                    </td>
-                    <td>
-                      {!isSelf && (
-                        <div style={{ display: 'flex', gap: '0.4rem' }}>
-                          {u.isActive ? (
-                            <button className="btn btn-danger btn-sm"
-                              onClick={() => handleAction(deactivateUser, u.userId, 'User deactivated',
-                                () => setUsers((us) => us.map((x) => x.userId === u.userId ? { ...x, isActive: false } : x)))}>
-                              Deactivate
-                            </button>
-                          ) : (
-                            <button className="btn btn-secondary btn-sm"
-                              onClick={() => handleAction(reactivateUser, u.userId, 'User reactivated',
-                                () => setUsers((us) => us.map((x) => x.userId === u.userId ? { ...x, isActive: true } : x)))}>
-                              Reactivate
-                            </button>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <span className={`badge badge-${u.role === 'ADMIN' ? 'amber' : u.role === 'MODERATOR' ? 'success' : 'brown'}`}>
+                            {u.role}
+                          </span>
+                          {!isSelf && (
+                            <select 
+                              className="text-xs" 
+                              style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}
+                              value={u.role}
+                              onChange={(e) => handleRoleChange(u.userId, e.target.value)}
+                            >
+                              <option value="USER">USER</option>
+                              <option value="MODERATOR">MODERATOR</option>
+                            </select>
                           )}
-                          <button className="btn btn-danger btn-sm"
-                            onClick={() => {
-                              if (!confirm('Permanently delete?')) return;
-                              handleAction(deleteUser, u.userId, 'User deleted',
-                                () => setUsers((us) => us.filter((x) => x.userId !== u.userId)));
-                            }}>
-                            Delete
-                          </button>
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="text-xs text-muted">{fullDate(u.createdAt)}</td>
+                      <td>
+                        <span className={`badge badge-${u.isActive ? 'success' : 'error'}`}>
+                          {u.isActive ? 'Active' : 'Suspended'}
+                        </span>
+                      </td>
+                      <td>
+                        {!isSelf && (
+                          <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            {u.isActive ? (
+                              <button className="btn btn-danger btn-sm"
+                                onClick={() => handleAction(deactivateUser, u.userId, 'User deactivated',
+                                  () => setUsers((us) => us.map((x) => x.userId === u.userId ? { ...x, isActive: false } : x)))}>
+                                Deactivate
+                              </button>
+                            ) : (
+                              <button className="btn btn-secondary btn-sm"
+                                onClick={() => handleAction(reactivateUser, u.userId, 'User reactivated',
+                                  () => setUsers((us) => us.map((x) => x.userId === u.userId ? { ...x, isActive: true } : x)))}>
+                                Reactivate
+                              </button>
+                            )}
+                            <button className="btn btn-danger btn-sm"
+                              onClick={() => {
+                                if (!confirm('Permanently delete?')) return;
+                                handleAction(deleteUser, u.userId, 'User deleted',
+                                  () => setUsers((us) => us.filter((x) => x.userId !== u.userId)));
+                              }}>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

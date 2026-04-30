@@ -18,10 +18,14 @@ export default function OAuthCallback() {
     const email    = params.get('email') || '';
     const isPasswordSet = params.get('isPasswordSet') === 'true';
     const profilePicUrl = params.get('profilePicUrl') || '';
+    const isElite = params.get('isElite') === 'true';
     const fullName = params.get('fullName') || '';
 
     if (token) {
-      const userData = { userId: Number(userId), username, role, email, isPasswordSet, profilePicUrl, fullName };
+      const userData = { 
+        userId: Number(userId), username, role, email, 
+        isPasswordSet, profilePicUrl, fullName, isElite 
+      };
       saveSession(userData, token);
       toast.success(`Welcome, ${username}!`, { id: 'oauth-success' });
       navigate(role === 'ADMIN' ? '/admin' : '/feed', { replace: true });

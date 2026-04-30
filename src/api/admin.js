@@ -51,6 +51,7 @@ export const getPlatformStats = () =>
 
 // --- ALIASES FOR BACKWARD COMPATIBILITY ---
 export const getAllPosts = () => api.get('/posts/public');
+export const getAllStories = () => api.get('/media/stories/all'); // Fetch all platform stories for stats
 export const removePost = deleteAnyPost;
 export const getAllComments = () => api.get('/comments/post/0'); 
 export const removeComment = deleteAnyComment;

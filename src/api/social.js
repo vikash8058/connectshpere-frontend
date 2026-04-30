@@ -65,20 +65,20 @@ export const deleteMedia = (mediaId) =>
 
 // --- Stories ---
 export const createStory = (data) =>
-  api.post('/stories', data);
+  api.post('/media/stories', data);
 
 export const getActiveStories = (authorIds = []) => 
-  api.get('/stories/feed', { params: { authorIds: authorIds.join(',') } });
+  api.get('/media/stories/feed', { params: { authorIds: authorIds.join(',') } });
 
-export const viewStory = (storyId) => api.get(`/stories/${storyId}/view`);
+export const viewStory = (storyId) => api.get(`/media/stories/${storyId}/view`);
 
-export const deleteStory = (storyId) => api.delete(`/stories/${storyId}`);
+export const deleteStory = (storyId) => api.delete(`/media/stories/${storyId}`);
 
 export const getStoriesByUser = (userId) =>
-  api.get(`/stories/user/${userId}`);
+  api.get(`/media/stories/user/${userId}`);
 
 export const getStoryViewers = (storyId) =>
-  api.get(`/stories/${storyId}/viewers`);
+  api.get(`/media/stories/${storyId}/viewers`);
 
 // --- Search & Hashtags ---
 export const searchPosts = (keyword) =>

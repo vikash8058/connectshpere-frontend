@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, UserCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { getGoogleOAuthUrl, getGithubOAuthUrl } from '../../api/auth';
 import Spinner from '../../components/common/Spinner';
@@ -43,15 +44,23 @@ export default function RegisterPage() {
     
     try {
       const res = await register(form);
-      if (res.data?.success) {
+      if (res?.data?.success) {
         navigate(`/verify-otp?email=${encodeURIComponent(form.email.trim())}`);
       }
     } catch (err) {
       console.error("Registration error:", err);
-      // Handle Spring Boot validation errors (400)
-      if (err.response?.status === 400 && err.response?.data?.data) {
-        setErrors(err.response.data.data);
+      // Handle backend validation errors
+      if (err.response?.status === 400) {
+        // If backend returns field-specific errors
+        if (err.response?.data?.data && typeof err.response.data.data === 'object') {
+          setErrors(err.response.data.data);
+        } else {
+          // Otherwise show general message
+          const msg = err.response?.data?.message || 'Registration failed. Please check your details.';
+          toast.error(msg);
+        }
       } else {
+        // Network or other errors
         const msg = err.response?.data?.message || 'Registration failed. Please try again.';
         toast.error(msg);
       }

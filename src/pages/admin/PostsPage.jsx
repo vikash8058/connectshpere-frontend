@@ -52,46 +52,48 @@ export default function PostsPage() {
         <EmptyState icon="📝" title="No posts found" />
       ) : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Author</th>
-                <th>Content</th>
-                <th>Visibility</th>
-                <th>Likes</th>
-                <th>Comments</th>
-                <th>Posted</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((p) => (
-                <tr key={p.postId}>
-                  <td>
-                    <span className="font-medium">{p.authorUsername || `User #${p.authorId}`}</span>
-                  </td>
-                  <td style={{ maxWidth: 260 }}>
-                    <span className="truncate" style={{ display: 'block', maxWidth: 260, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                      {p.content?.slice(0, 80)}{p.content?.length > 80 ? '…' : ''}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${p.visibility === 'PUBLIC' ? 'badge-success' : p.visibility === 'PRIVATE' ? 'badge-error' : 'badge-brown'}`}>
-                      {p.visibility}
-                    </span>
-                  </td>
-                  <td className="text-sm">{p.likesCount || 0}</td>
-                  <td className="text-sm">{p.commentsCount || 0}</td>
-                  <td className="text-xs text-muted">{timeAgo(p.createdAt)}</td>
-                  <td>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleRemove(p.postId)}>
-                      Remove
-                    </button>
-                  </td>
+          <div className="data-table-wrapper">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Author</th>
+                  <th>Content</th>
+                  <th>Visibility</th>
+                  <th>Likes</th>
+                  <th>Comments</th>
+                  <th>Posted</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map((p) => (
+                  <tr key={p.postId}>
+                    <td>
+                      <span className="font-medium">{p.authorUsername || `User #${p.authorId}`}</span>
+                    </td>
+                    <td style={{ maxWidth: 260 }}>
+                      <span className="truncate" style={{ display: 'block', maxWidth: 260, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                        {p.content?.slice(0, 80)}{p.content?.length > 80 ? '…' : ''}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`badge ${p.visibility === 'PUBLIC' ? 'badge-success' : p.visibility === 'PRIVATE' ? 'badge-error' : 'badge-brown'}`}>
+                        {p.visibility}
+                      </span>
+                    </td>
+                    <td className="text-sm">{p.likesCount || 0}</td>
+                    <td className="text-sm">{p.commentsCount || 0}</td>
+                    <td className="text-xs text-muted">{timeAgo(p.createdAt)}</td>
+                    <td>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleRemove(p.postId)}>
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { BarChart2, Users, FileText, Flag, Bell, ArrowLeft, LogOut } from 'lucide-react';
+import { BarChart2, Users, FileText, Flag, Bell, ArrowLeft, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getReportStats } from '../../api/admin';
 
@@ -8,6 +8,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const { logout, isAdmin } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -42,10 +43,29 @@ export default function AdminLayout() {
     logout();
     navigate('/login');
   };
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
   return (
     <div className="admin-shell">
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="admin-sidebar-mobile-overlay active" onClick={closeMobileMenu} />
+      )}
+
+      {/* Mobile header */}
+      <div className="admin-header" style={{ display: 'none' }}>
+        <div className="admin-brand-mobile">ConnectSphere</div>
+        <button 
+          className="admin-mobile-toggle" 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
       {/* Admin sidebar */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar${mobileMenuOpen ? ' mobile-open' : ''}`}>
         <div className="admin-brand">
           ConnectSphere<br />
           <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-body)' }}>Staff Panel</span>
@@ -58,6 +78,7 @@ export default function AdminLayout() {
             end={end}
             className={({ isActive }) => `admin-link${isActive ? ' active' : ''}`}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            onClick={closeMobileMenu}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Icon size={16} /> {label}
@@ -83,14 +104,20 @@ export default function AdminLayout() {
           <div
             className="admin-link"
             style={{ cursor: 'pointer' }}
-            onClick={() => navigate('/feed')}
+            onClick={() => {
+              navigate('/feed');
+              closeMobileMenu();
+            }}
           >
             <ArrowLeft size={16} /> Back to App
           </div>
           <div
             className="admin-link danger"
             style={{ cursor: 'pointer', marginTop: '0.5rem', color: '#fca5a5' }}
-            onClick={handleLogout}
+            onClick={() => {
+              handleLogout();
+              closeMobileMenu();
+            }}
           >
             <LogOut size={16} /> Log Out
           </div>

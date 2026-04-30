@@ -58,25 +58,16 @@ export default function Navbar({ onNewPost }) {
     <nav className="navbar">
       {/* Column 1: Brand & Back Button */}
       <div className="navbar-left" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <button 
-          className="navbar-mobile-only" 
-          onClick={() => navigate(-1)}
-          style={{ 
-            background: 'none', 
-            border: 'none', 
-            padding: '0.4rem', 
-            color: 'var(--text-primary)', 
-            cursor: 'pointer',
-            marginLeft: '-0.5rem'
-          }}
-          aria-label="Go back"
-        >
-          <ArrowLeft size={24} />
-        </button>
+        <div className="navbar-mobile-only">
+          <button className="navbar-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>
+            {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
         <div className="navbar-brand" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
           ConnectSphere
         </div>
       </div>
+
 
       {/* Column 2: Search bar */}
       <div className="navbar-search navbar-desktop-only" style={{ position: 'relative' }}>
@@ -192,7 +183,10 @@ export default function Navbar({ onNewPost }) {
                     <div style={{ position: 'fixed', inset: 0, zIndex: 199 }} onClick={() => setShowMenu(false)} />
                     <div className="dropdown-menu" style={{ zIndex: 200 }}>
                       <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>
-                        <div className="font-medium text-sm">{user?.username}</div>
+                        <div className="font-medium text-sm flex items-center gap-1">
+                          {user?.username}
+                          {user?.isElite && <Crown size={14} className="text-amber" fill="currentColor" />}
+                        </div>
                         <div className="text-xs text-muted">{user?.email}</div>
                       </div>
                       <Link to={`/profile/${user?.userId}`} className="dropdown-item" onClick={() => setShowMenu(false)}>
@@ -217,59 +211,6 @@ export default function Navbar({ onNewPost }) {
                 )}
               </div>
             </div>
-
-            {/* Mobile hamburger menu - only show on mobile */}
-            <div className="navbar-mobile-only">
-              <button 
-                className="navbar-hamburger"
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-              >
-                {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
-              </button>
-
-              {showMobileMenu && (
-                <>
-                  <div className="navbar-mobile-backdrop" onClick={() => setShowMobileMenu(false)} />
-                  <div className="navbar-mobile-menu">
-                    <div className="navbar-mobile-header">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <Avatar src={user?.profilePicUrl} name={user?.username} size="sm" />
-                        <div style={{ minWidth: 0 }}>
-                          <div className="font-bold text-sm flex items-center gap-1">
-                            <span className="truncate">{user?.username}</span> 
-                            {user?.isElite && <Crown size={14} className="text-amber" fill="currentColor" />}
-                          </div>
-                          <div className="text-xs text-muted truncate">{user?.email}</div>
-                        </div>
-                      </div>
-                      <button 
-                        className="navbar-close-btn"
-                        onClick={() => setShowMobileMenu(false)}
-                      >
-                        <X size={24} />
-                      </button>
-                    </div>
-                    <Link to={`/profile/${user?.userId}`} className="navbar-mobile-item" onClick={() => setShowMobileMenu(false)}>
-                      <User size={18} /> My Profile
-                    </Link>
-                    <Link to="/elite" className="navbar-mobile-item" style={{ color: 'var(--amber)' }} onClick={() => setShowMobileMenu(false)}>
-                      <Crown size={18} /> Elite Status
-                    </Link>
-                    <Link to="/settings" className="navbar-mobile-item" onClick={() => setShowMobileMenu(false)}>
-                      <Settings size={18} /> Settings
-                    </Link>
-                    {isStaff && (
-                      <Link to="/admin" className="navbar-mobile-item" onClick={() => setShowMobileMenu(false)}>
-                        <Shield size={18} /> Staff Panel
-                      </Link>
-                    )}
-                    <div className="navbar-mobile-item danger" onClick={() => { logout(); setShowMobileMenu(false); }}>
-                      <LogOut size={18} /> Logout
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
           </>
         ) : (
           <>
@@ -290,51 +231,81 @@ export default function Navbar({ onNewPost }) {
                 Sign Up
               </button>
             </div>
-
-            {/* Mobile hamburger menu - only show on mobile */}
-            <div className="navbar-mobile-only">
-              <button 
-                className="navbar-hamburger"
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-              >
-                {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
-              </button>
-
-              {showMobileMenu && (
-                <>
-                  <div className="navbar-mobile-backdrop" onClick={() => setShowMobileMenu(false)} />
-                  <div className="navbar-mobile-menu">
-                    <div className="navbar-mobile-header">
-                      <button 
-                        className="navbar-close-btn"
-                        onClick={() => setShowMobileMenu(false)}
-                      >
-                        <X size={24} />
-                      </button>
-                    </div>
-                    <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      <button
-                        className="btn btn-primary"
-                        style={{ width: '100%', borderRadius: 'var(--r-full)' }}
-                        onClick={() => { navigate('/login'); setShowMobileMenu(false); }}
-                      >
-                        Log In
-                      </button>
-                      <button
-                        className="btn btn-secondary"
-                        style={{ width: '100%', borderRadius: 'var(--r-full)' }}
-                        onClick={() => { navigate('/register'); setShowMobileMenu(false); }}
-                      >
-                        Sign Up
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
           </>
         )}
       </div>
+
+      {/* Mobile Side Menu (Shared for Auth/Guest) */}
+      {showMobileMenu && (
+        <>
+          <div className="navbar-mobile-backdrop" onClick={() => setShowMobileMenu(false)} />
+          <div className="navbar-mobile-menu">
+            <div className="navbar-mobile-header">
+              {isAuthenticated ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <Avatar src={user?.profilePicUrl} name={user?.username} size="sm" />
+                  <div style={{ minWidth: 0 }}>
+                    <div className="font-bold text-sm flex items-center gap-1">
+                      <span className="truncate">{user?.username}</span> 
+                      {user?.isElite && <Crown size={14} className="text-amber" fill="currentColor" />}
+                    </div>
+                    <div className="text-xs text-muted truncate">{user?.email}</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="font-bold" style={{ color: 'var(--amber)' }}>ConnectSphere</div>
+              )}
+              <button 
+                className="navbar-close-btn"
+                style={{ marginLeft: 'auto' }}
+                onClick={() => setShowMobileMenu(false)}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {isAuthenticated ? (
+              <>
+                <Link to={`/profile/${user?.userId}`} className="navbar-mobile-item" onClick={() => setShowMobileMenu(false)}>
+                  <User size={18} /> My Profile
+                </Link>
+                <Link to="/elite" className="navbar-mobile-item" style={{ color: 'var(--amber)' }} onClick={() => setShowMobileMenu(false)}>
+                  <Crown size={18} /> Elite Status
+                </Link>
+                <Link to="/settings" className="navbar-mobile-item" onClick={() => setShowMobileMenu(false)}>
+                  <Settings size={18} /> Settings
+                </Link>
+                {isStaff && (
+                  <Link to="/admin" className="navbar-mobile-item" onClick={() => setShowMobileMenu(false)}>
+                    <Shield size={18} /> Staff Panel
+                  </Link>
+                )}
+                <div className="navbar-mobile-item danger" onClick={() => { logout(); setShowMobileMenu(false); }}>
+                  <LogOut size={18} /> Logout
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <button
+                  className="btn btn-primary"
+                  style={{ width: '100%', borderRadius: 'var(--r-full)' }}
+                  onClick={() => { navigate('/login'); setShowMobileMenu(false); }}
+                >
+                  Log In
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  style={{ width: '100%', borderRadius: 'var(--r-full)' }}
+                  onClick={() => { navigate('/register'); setShowMobileMenu(false); }}
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
     </nav>
   );
 }

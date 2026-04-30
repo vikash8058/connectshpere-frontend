@@ -16,6 +16,7 @@ export default function ReportsPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter]   = useState('PENDING');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const loadData = async () => {
     try {
@@ -119,7 +120,7 @@ export default function ReportsPage() {
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+      <div className="admin-controls">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h2 className="admin-section-title" style={{ margin: 0 }}>
             Moderation Queue
@@ -156,39 +157,39 @@ export default function ReportsPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filtered.map((r) => (
-            <div key={r.reportId} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            <div key={r.reportId} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', padding: '1rem' }}>
               {/* Header row */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <span className={`badge ${r.status === 'PENDING' ? 'badge-warning' : 'badge-success'}`}>
                     {r.status}
                   </span>
-                  <span className="badge badge-neutral" style={{ background: 'var(--cream-200)', color: 'var(--text-primary)' }}>
+                  <span className="badge badge-neutral" style={{ background: 'var(--cream-200)', color: 'var(--text-primary)', fontSize: '0.7rem' }}>
                     {r.targetType} #{r.targetId}
                   </span>
                 </div>
-                <span className="text-xs text-muted">{timeAgo(r.createdAt)}</span>
+                <span className="text-xs text-muted" style={{ whiteSpace: 'nowrap' }}>{timeAgo(r.createdAt)}</span>
               </div>
 
               {/* Reporter and reason */}
-              <div>
-                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>
                   <strong>Reported by:</strong> {r.reporterUsername || `User #${r.reporterId}`}
                 </span>
               </div>
               {r.reason && (
-                <div style={{ background: 'var(--cream-100)', borderRadius: 'var(--r-md)', padding: '0.6rem 0.9rem', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
+                <div style={{ background: 'var(--cream-100)', borderRadius: 'var(--r-md)', padding: '0.75rem', fontSize: '0.85rem', color: 'var(--text-primary)', borderLeft: '3px solid var(--sand)' }}>
                   {r.reason}
                 </div>
               )}
 
               {/* Actions for pending reports */}
               {r.status === 'PENDING' && (
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
-                  <button className="btn btn-danger btn-sm" onClick={() => handleResolve(r)}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                  <button className="btn btn-danger btn-sm" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleResolve(r)}>
                     🗑️ Remove Content
                   </button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => handleDismiss(r.reportId)}>
+                  <button className="btn btn-ghost btn-sm" style={{ flex: 1, minWidth: '80px' }} onClick={() => handleDismiss(r.reportId)}>
                     Dismiss
                   </button>
                 </div>
