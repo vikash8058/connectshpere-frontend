@@ -9,7 +9,9 @@ export const fixCdnUrl = (url) => {
   if (url.includes('cdn.connectsphere.com')) {
     const filename = url.split('/').pop();
     // Redirect to local media endpoint via API Gateway
-    return `http://localhost:8080/api/v1/media/cdn/${filename}`;
+    //return `http://localhost:8080/api/v1/media/cdn/${filename}`;      -> for local 
+
+    return `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/media/cdn/${filename}`;
   }
   
   return url;

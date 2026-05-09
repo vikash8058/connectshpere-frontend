@@ -10,4 +10,9 @@ export default defineConfig({
       '/oauth2': { target: 'http://localhost:8080', changeOrigin: true },
     },
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
+  },
 });
