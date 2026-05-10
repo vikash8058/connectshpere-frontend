@@ -17,10 +17,13 @@ export default function Navbar({ onNewPost }) {
   const searchTimer = useRef(null);
   const navigate = useNavigate();
 
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (query.trim()) {
       setShowResults(false);
+      setShowMobileSearch(false);
       navigate(`/explore?q=${encodeURIComponent(query.trim())}`);
     }
   };
@@ -57,19 +60,61 @@ export default function Navbar({ onNewPost }) {
   return (
     <nav className="navbar">
       {/* Column 1: Brand & Back Button */}
-      <div className="navbar-left" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <div className="navbar-mobile-only">
-          <button className="navbar-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>
-            {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-        <div className="navbar-brand" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
-          ConnectSphere
-        </div>
+      <div className="navbar-left" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: showMobileSearch ? '1' : 'unset' }}>
+        {!showMobileSearch && (
+          <>
+            <div className="navbar-mobile-only">
+              <button className="navbar-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>
+                {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+            <div className="navbar-brand" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
+              ConnectSphere
+            </div>
+          </>
+        )}
+        
+        {/* Mobile Search Input Overlay */}
+        {showMobileSearch && (
+          <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '0.5rem', padding: '0 0.5rem' }}>
+            <button className="btn-ghost" onClick={() => { setShowMobileSearch(false); setShowResults(false); }} style={{ padding: '0.5rem' }}>
+              <ArrowLeft size={20} />
+            </button>
+            <form onSubmit={handleSearch} style={{ flex: 1, position: 'relative' }}>
+              <input
+                autoFocus
+                className="input"
+                style={{ 
+                  padding: '0.65rem 3rem 0.65rem 1rem', 
+                  borderRadius: 'var(--r-full)', 
+                  fontSize: '0.9rem',
+                  width: '100%',
+                  background: 'var(--cream-100)',
+                  border: '1px solid var(--border)'
+                }}
+                placeholder="Search people..."
+                value={query}
+                onChange={handleInputChange}
+              />
+              <button type="submit" style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', background: 'var(--amber)', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Search size={14} />
+              </button>
+            </form>
+          </div>
+        )}
       </div>
 
+      {/* Mobile Search Toggle Button (Shows when search is closed) */}
+      {!showMobileSearch && (
+        <div className="navbar-mobile-only" style={{ marginLeft: 'auto', marginRight: '0.5rem' }}>
+          <button className="navbar-hamburger" onClick={() => setShowMobileSearch(true)}>
+            <Search size={22} />
+          </button>
+        </div>
+      )}
 
-      {/* Column 2: Search bar */}
+
+      {/* Column 2: Search bar (Desktop) */}
       <div className="navbar-search navbar-desktop-only" style={{ position: 'relative' }}>
         <form onSubmit={handleSearch} style={{ width: '100%' }}>
           <div className="input-icon-wrapper" style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
@@ -84,7 +129,7 @@ export default function Navbar({ onNewPost }) {
                 background: 'var(--cream-100)',
                 border: '1px solid var(--border)'
               }}
-              placeholder="Search people by name or username…"
+              placeholder="Search people..."
               value={query}
               onChange={handleInputChange}
               onFocus={() => query.trim() && setShowResults(true)}
@@ -95,56 +140,39 @@ export default function Navbar({ onNewPost }) {
           </div>
         </form>
 
-        {/* Search Results Dropdown */}
-        {showResults && (
-          <>
-            <div 
-              style={{ position: 'fixed', inset: 0, zIndex: 90 }} 
-              onClick={() => setShowResults(false)} 
-            />
-            <div className="dropdown-menu" style={{ 
-              position: 'absolute', 
-              top: '100%', 
-              left: 0, 
-              right: 0, 
-              marginTop: '0.5rem', 
-              zIndex: 100, 
-              maxHeight: '400px', 
-              overflowY: 'auto',
-              padding: '0.5rem 0'
-            }}>
-              {isSearching ? (
-                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  Searching...
-                </div>
-              ) : results.length > 0 ? (
-                results.map(u => (
-                  <div 
-                    key={u.userId} 
-                    className="dropdown-item" 
-                    onClick={() => {
-                      setShowResults(false);
-                      setQuery('');
-                      navigate(`/profile/${u.userId}`);
-                    }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem' }}
-                  >
-                    <Avatar src={u.profilePicUrl} name={u.username} size="sm" />
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>{u.fullName || u.username}</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{u.username}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  No users found for "{query}"
-                </div>
-              )}
-            </div>
-          </>
+        {/* Search Results Dropdown (Shared Logic) */}
+        {showResults && !showMobileSearch && (
+          <SearchResults 
+            isSearching={isSearching} 
+            results={results} 
+            query={query} 
+            onClose={() => setShowResults(false)}
+            onSelect={(id) => {
+              setShowResults(false);
+              setQuery('');
+              navigate(`/profile/${id}`);
+            }}
+          />
         )}
       </div>
+
+      {/* Mobile Search Overlay Results */}
+      {showMobileSearch && showResults && (
+        <div style={{ position: 'absolute', top: '58px', left: 0, right: 0, background: 'var(--white)', zIndex: 300, borderBottom: '1px solid var(--border)', boxShadow: 'var(--shadow-md)' }}>
+          <SearchResults 
+            isSearching={isSearching} 
+            results={results} 
+            query={query} 
+            onClose={() => setShowResults(false)}
+            onSelect={(id) => {
+              setShowResults(false);
+              setShowMobileSearch(false);
+              setQuery('');
+              navigate(`/profile/${id}`);
+            }}
+          />
+        </div>
+      )}
 
       {/* Column 3: Right side */}
       <div className="navbar-right" style={{ paddingRight: '1.5rem', justifyContent: 'flex-end' }}>
@@ -307,5 +335,53 @@ export default function Navbar({ onNewPost }) {
       )}
 
     </nav>
+  );
+}
+
+// Sub-component for Search Results to ensure consistency
+function SearchResults({ isSearching, results, query, onClose, onSelect }) {
+  return (
+    <>
+      <div 
+        style={{ position: 'fixed', inset: 0, zIndex: 90 }} 
+        onClick={onClose} 
+      />
+      <div className="dropdown-menu" style={{ 
+        position: 'absolute', 
+        top: '100%', 
+        left: 0, 
+        right: 0, 
+        marginTop: '0.5rem', 
+        zIndex: 100, 
+        maxHeight: '400px', 
+        overflowY: 'auto',
+        padding: '0.5rem 0'
+      }}>
+        {isSearching ? (
+          <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            Searching...
+          </div>
+        ) : results.length > 0 ? (
+          results.map(u => (
+            <div 
+              key={u.userId} 
+              className="dropdown-item" 
+              onClick={() => onSelect(u.userId)}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem' }}
+            >
+              <Avatar src={u.profilePicUrl} name={u.username} size="sm" />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>{u.fullName || u.username}</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{u.username}</span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            No users found for "{query}"
+          </div>
+        )}
+      </div>
+    </>
   );
 }

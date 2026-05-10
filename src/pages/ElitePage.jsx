@@ -8,8 +8,10 @@ import toast from 'react-hot-toast';
 export default function ElitePage() {
   const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [isElite, setIsElite] = useState(user?.isElite || false);
-  const [activePlan, setActivePlan] = useState(user?.planType || null);
+  
+  const isElite = user?.isElite || false;
+  // Fallback to ELITE_MONTHLY if we know they are elite but planType is missing from backend
+  const activePlan = user?.planType || (isElite ? 'ELITE_MONTHLY' : null);
 
   useEffect(() => {
     // 1. Load Razorpay Script
@@ -24,14 +26,15 @@ export default function ElitePage() {
         .then(res => {
           if (res.data?.success && res.data.data) {
             const data = res.data.data;
-            if (data.isElite !== user.isElite || data.eliteUntil !== user.eliteUntil || data.planType !== user.planType) {
-              updateUser({ ...user, isElite: data.isElite, eliteUntil: data.eliteUntil, planType: data.planType });
-              setIsElite(data.isElite);
-              setActivePlan(data.planType);
-            }
+            // Use functional update or ensure we have latest user
+            updateUser({ 
+              isElite: data.isElite, 
+              eliteUntil: data.eliteUntil, 
+              planType: data.planType 
+            });
           }
         })
-        .catch(() => {});
+        .catch(err => console.error("Failed to fetch subscription status:", err));
     }
     
     return () => {
@@ -69,8 +72,6 @@ export default function ElitePage() {
 
             if (verifyRes.success) {
               toast.success("Welcome to ConnectSphere Elite!");
-              setIsElite(true);
-              setActivePlan(planType);
               // Update local user context with the actual expiry date from backend
               if (updateUser) {
                 updateUser({ ...user, isElite: true, eliteUntil: verifyRes.data, planType: planType });
@@ -106,9 +107,23 @@ export default function ElitePage() {
     if (!expiryDate) return null;
     try {
       const now = new Date();
-      const expiry = new Date(expiryDate);
-      const diffTime = expiry - now;
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      let expiry;
+      
+      // Handle Spring Boot LocalDateTime array format: [year, month, day, hour, minute, second]
+      if (Array.isArray(expiryDate)) {
+        expiry = new Date(expiryDate[0], expiryDate[1] - 1, expiryDate[2], 
+                          expiryDate[3] || 0, expiryDate[4] || 0, expiryDate[5] || 0);
+      } else if (typeof expiryDate === 'string') {
+        expiry = new Date(expiryDate);
+      } else {
+        return null;
+      }
+      
+      if (isNaN(expiry.getTime())) return null;
+      
+      const diffTime = expiry.getTime() - now.getTime();
+      const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return days > 0 ? days : 0;
     } catch { return null; }
   };
 
@@ -120,13 +135,13 @@ export default function ElitePage() {
         <div className="elite-badge-preview">👑</div>
         <h1 className="elite-title">ConnectSphere Elite</h1>
         <p className="elite-subtitle">
-          {isCurrentlyElite 
+          {isElite 
             ? "You are a premium member! Enjoy your golden badge and priority status." 
             : "Stand out from the crowd with premium features and a golden badge."}
         </p>
       </div>
 
-      {isCurrentlyElite && (
+      {isElite && (
         <div className="elite-active-card">
           <div className="active-card-content">
             <div className="active-user-info">
@@ -152,7 +167,7 @@ export default function ElitePage() {
         </div>
       )}
 
-      {!isCurrentlyElite && (
+      {!isElite && (
         <div className="elite-benefits">
           <div className="benefit-card">
             <div className="benefit-icon"><Crown size={24} /></div>
@@ -172,9 +187,9 @@ export default function ElitePage() {
         </div>
       )}
 
-      <div className="elite-pricing" style={{ opacity: isCurrentlyElite ? 0.8 : 1 }}>
+      <div className="elite-pricing">
         {/* Monthly Plan */}
-        <div className={`price-card ${activePlan === 'ELITE_MONTHLY' ? 'active-plan-border' : isCurrentlyElite ? 'disabled' : ''}`}>
+        <div className={`price-card ${activePlan === 'ELITE_MONTHLY' ? 'active-plan-border' : isElite ? 'disabled-plan' : ''}`}>
           <h2 className="plan-name">Elite Monthly</h2>
           <div className="plan-price">₹199<span>/mo</span></div>
           <ul className="plan-features">
@@ -184,9 +199,12 @@ export default function ElitePage() {
             <li>24/7 Priority Support</li>
           </ul>
           {activePlan === 'ELITE_MONTHLY' ? (
-            <span className="current-plan-badge">Your Active Plan</span>
-          ) : isCurrentlyElite ? (
-            <span className="other-plan-badge">Elite Subscription Active</span>
+            <div className="active-badge-container">
+              <Check size={16} className="text-success" />
+              <span className="current-plan-badge">Your Active Plan</span>
+            </div>
+          ) : isElite ? (
+            <button className="btn btn-outline btn-full" disabled>Plan Locked</button>
           ) : (
             <button 
               className="btn btn-primary btn-full btn-lg" 
@@ -199,8 +217,8 @@ export default function ElitePage() {
         </div>
 
         {/* Yearly Plan */}
-        <div className={`price-card popular ${activePlan === 'ELITE_YEARLY' ? 'active-plan-border' : isCurrentlyElite ? 'disabled' : ''}`}>
-          <div className="popular-badge">Best Value</div>
+        <div className={`price-card ${activePlan === 'ELITE_YEARLY' ? 'active-plan-border' : (activePlan === 'ELITE_MONTHLY' || (isElite && !activePlan)) ? 'disabled-plan' : 'popular'}`}>
+          {(!isElite || activePlan === 'ELITE_YEARLY') && <div className="popular-badge">Best Value</div>}
           <h2 className="plan-name">Elite Yearly</h2>
           <div className="plan-price">₹1,999<span>/yr</span></div>
           <ul className="plan-features">
@@ -210,9 +228,12 @@ export default function ElitePage() {
             <li>Save ₹389 per year</li>
           </ul>
           {activePlan === 'ELITE_YEARLY' ? (
-            <span className="current-plan-badge">Your Active Plan</span>
-          ) : isCurrentlyElite ? (
-            <span className="other-plan-badge">Elite Subscription Active</span>
+            <div className="active-badge-container">
+              <Check size={16} className="text-success" />
+              <span className="current-plan-badge">Your Active Plan</span>
+            </div>
+          ) : isElite ? (
+            <button className="btn btn-outline btn-full" disabled>Plan Locked</button>
           ) : (
             <button 
               className="btn btn-primary btn-full btn-lg" 
@@ -225,7 +246,7 @@ export default function ElitePage() {
         </div>
       </div>
 
-      {!isCurrentlyElite && (
+      {!isElite && (
         <div className="mt-4 text-center">
           <p className="text-xs text-muted">
             <AlertCircle size={12} className="inline mr-1" />

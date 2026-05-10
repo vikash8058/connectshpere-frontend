@@ -91,10 +91,35 @@ export default function ExplorePage() {
 
   return (
     <div>
+      {/* Search Header (Always visible) */}
+      <div style={{ padding: '1.5rem 1.5rem 0.5rem' }}>
+        <form onSubmit={handleSearch} style={{ position: 'relative', marginBottom: '1rem' }}>
+          <input
+            className="input"
+            style={{ 
+              padding: '0.75rem 1rem 0.75rem 3rem', 
+              borderRadius: 'var(--r-md)', 
+              width: '100%',
+              background: 'var(--white)',
+              border: '1px solid var(--border)'
+            }}
+            placeholder="Search posts, people or hashtags..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+            🔍
+          </div>
+        </form>
+        
+        {!query && (
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '1rem' }}>Explore</h2>
+        )}
+      </div>
+
       {/* Default Explore View (Public Feed) */}
       {!query && (
-        <div style={{ padding: '1.5rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '1.5rem' }}>Explore</h2>
+        <div style={{ padding: '0 1.5rem 1.5rem' }}>
 
           {/* Public Posts Feed */}
           {posts.length > 0 && (
