@@ -6,6 +6,11 @@ export default defineConfig({
   define: {
     global: 'window', // Add this line
   },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
   server: {
     port: 5173,
     proxy: {
