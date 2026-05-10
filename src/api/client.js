@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Updated: 2026-05-10
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const api = axios.create({
@@ -7,7 +8,7 @@ const api = axios.create({
   baseURL: `${BASE_URL}/api/v1`,
   headers: { 
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true', 
+    'ngrok-skip-browser-warning': 'true',
   },
 });
 
