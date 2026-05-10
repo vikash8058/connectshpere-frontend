@@ -1,23 +1,22 @@
 import axios from 'axios';
 
-// Base URL — change this to match your Spring Boot server
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const api = axios.create({
-  // baseURL: '/api/v1',      -> for local 
+  //baseURL: '/api/v1',     -> for local 
   baseURL: `${BASE_URL}/api/v1`,
-  headers: { 'Content-Type': 'application/json' },
-  'ngrok-skip-browser-warning': 'true',
+  headers: { 
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true', 
+  },
 });
 
-// Attach JWT token to every request automatically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Handle 401 globally — clear token and redirect to login
 api.interceptors.response.use(
   (res) => res,
   (err) => {
