@@ -54,7 +54,10 @@ export const sendBulkNotification = (userIds, message) =>
 // --- Media ---
 export const uploadMedia = (formData) =>
   api.post('/media/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { 
+      'Content-Type': 'multipart/form-data',
+      'ngrok-skip-browser-warning': 'true',
+    },
   });
 
 export const getMediaByPost = (postId) =>
