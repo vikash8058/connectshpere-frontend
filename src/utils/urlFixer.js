@@ -1,21 +1,18 @@
-/**
- * Utility to fix legacy or broken CDN URLs.
- * Replaces cdn.connectsphere.com with the local API gateway URL.
- */
 export const fixCdnUrl = (url) => {
   if (!url) return '';
-  
-  // If it's a legacy placeholder or uses the wrong domain
+
+  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
   if (url.includes('cdn.connectsphere.com')) {
     const filename = url.split('/').pop();
-    // Redirect to local media endpoint via API Gateway
-    //return `http://localhost:8080/api/v1/media/cdn/${filename}`;      -> for local 
-
-    return `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/media/cdn/${filename}`;
+    return `${BASE_URL}/api/v1/media/cdn/${filename}`;
   }
-  
+
+  if (url.includes('localhost:8080')) {
+    return url.replace('http://localhost:8080', BASE_URL);
+  }
+
   return url;
 };
 
-// Alias for convenience
 export const fixMediaUrl = fixCdnUrl;
