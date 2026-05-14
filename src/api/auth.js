@@ -54,10 +54,10 @@ export const refreshToken = (refreshToken) =>
 // --- OAUTH ---
 
 export const getGoogleOAuthUrl = () =>
-  `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/oauth2/authorization/google`;
+  `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/oauth2/authorization/google`;
 
 export const getGithubOAuthUrl = () =>
-  `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/oauth2/authorization/github`;
+  `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/oauth2/authorization/github`;
 
 // --- ADMIN ONLY ---
 
