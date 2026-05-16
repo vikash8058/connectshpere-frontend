@@ -98,7 +98,7 @@ http://localhost:5173/oauth/callback?token=JWT&userId=1&username=john&role=USER&
 
 ```bash
 npm run build
-# Output goes to dist/ — deploy to Nginx, Vercel, Netlify, etc.
+# Output goes to dist/ — deploy to Nginx or your preferred hosting service.
 ```
 
 ## 🎨 Design System
